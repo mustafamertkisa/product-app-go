@@ -31,7 +31,11 @@ func main() {
 	productService := service.NewProductServiceImpl(productRepository, validate)
 	productController := controller.NewProductController(productService)
 
-	routes := router.NewRouter(productController)
+	userRepository := repository.NewUserRepositoryImpl(db)
+	userService := service.NewUserServiceImpl(userRepository, validate)
+	userController := controller.NewUserController(userService)
+
+	routes := router.NewRouter(productController, userController)
 
 	app := fiber.New()
 	app.Mount("/api", routes)

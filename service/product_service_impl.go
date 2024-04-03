@@ -32,8 +32,27 @@ func (p *ProductServiceImpl) Create(product request.CreateProductRequest) {
 	p.ProductRepository.Save(productModel)
 }
 
+func (p *ProductServiceImpl) Update(product request.UpdateProductRequest) {
+	productData, err := p.ProductRepository.FindById(product.Id)
+	helper.ErrorPanic(err)
+	productData.Name = product.Name
+	productData.Price = product.Price
+	p.ProductRepository.Update(productData)
+}
+
 func (p *ProductServiceImpl) Delete(productId int) {
 	p.ProductRepository.Delete(productId)
+}
+
+func (p *ProductServiceImpl) FindById(productId int) response.ProductResponse {
+	productData, err := p.ProductRepository.FindById(productId)
+	helper.ErrorPanic(err)
+	productResponse := response.ProductResponse{
+		Id:    int(productData.Id),
+		Name:  productData.Name,
+		Price: productData.Price,
+	}
+	return productResponse
 }
 
 func (p *ProductServiceImpl) FindAll() []response.ProductResponse {
@@ -50,23 +69,4 @@ func (p *ProductServiceImpl) FindAll() []response.ProductResponse {
 	}
 
 	return products
-}
-
-func (p *ProductServiceImpl) FindById(productId int) response.ProductResponse {
-	productData, err := p.ProductRepository.FindById(productId)
-	helper.ErrorPanic(err)
-	productResponse := response.ProductResponse{
-		Id:    int(productData.Id),
-		Name:  productData.Name,
-		Price: productData.Price,
-	}
-	return productResponse
-}
-
-func (p *ProductServiceImpl) Update(product request.UpdateProductRequest) {
-	productData, err := p.ProductRepository.FindById(product.Id)
-	helper.ErrorPanic(err)
-	productData.Name = product.Name
-	productData.Price = product.Price
-	p.ProductRepository.Update(productData)
 }

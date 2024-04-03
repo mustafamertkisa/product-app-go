@@ -28,7 +28,7 @@ func (controller *ProductController) Create(ctx *fiber.Ctx) error {
 	webResponse := response.Response{
 		Code:    200,
 		Status:  "Ok",
-		Message: "Successfully created product data!",
+		Message: "Successfully created product data",
 		Data:    nil,
 	}
 
@@ -51,7 +51,7 @@ func (controller *ProductController) Update(ctx *fiber.Ctx) error {
 	webResponse := response.Response{
 		Code:    200,
 		Status:  "Ok",
-		Message: "Successfully updated product data!",
+		Message: "Successfully updated product data",
 		Data:    nil,
 	}
 
@@ -67,7 +67,7 @@ func (controller *ProductController) Delete(ctx *fiber.Ctx) error {
 	webResponse := response.Response{
 		Code:    200,
 		Status:  "Ok",
-		Message: "Successfully deleted product data!",
+		Message: "Successfully deleted product data",
 		Data:    nil,
 	}
 
@@ -84,7 +84,7 @@ func (controller *ProductController) FindById(ctx *fiber.Ctx) error {
 	webResponse := response.Response{
 		Code:    200,
 		Status:  "Ok",
-		Message: "Successfully get product data!",
+		Message: "Successfully get product data",
 		Data:    productResponse,
 	}
 
@@ -97,7 +97,7 @@ func (controller *ProductController) FindAll(ctx *fiber.Ctx) error {
 	webResponse := response.Response{
 		Code:    200,
 		Status:  "Ok",
-		Message: "Successfully get products data!",
+		Message: "Successfully get products data",
 		Data:    productResponse,
 	}
 
