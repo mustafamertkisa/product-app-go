@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewRouter(productController *controller.ProductController, userController *controller.UserController) *fiber.App {
+func NewRouter(productController *controller.ProductController, userController *controller.UserController, orderController *controller.OrderController) *fiber.App {
 	router := fiber.New()
 
 	router.Get("/healthchecker", func(c *fiber.Ctx) error {
@@ -36,6 +36,17 @@ func NewRouter(productController *controller.ProductController, userController *
 		router.Delete("", userController.Delete)
 		router.Get("", userController.FindById)
 		router.Patch("", userController.Update)
+	})
+
+	router.Route("/orders", func(router fiber.Router) {
+		router.Post("/", orderController.Create)
+		router.Get("", orderController.FindAll)
+	})
+
+	router.Route("/orders/:orderId", func(router fiber.Router) {
+		router.Delete("", orderController.Delete)
+		router.Get("", orderController.FindById)
+		router.Patch("", orderController.Update)
 	})
 
 	return router
