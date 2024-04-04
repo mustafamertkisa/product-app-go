@@ -25,7 +25,7 @@ func main() {
 	db := config.ConnectionDB(&loadConfig)
 	validate := validator.New()
 
-	db.Table("products").AutoMigrate(&model.Product{})
+	db.AutoMigrate(&model.Product{}, &model.User{}, &model.Order{})
 
 	productRepository := repository.NewProductRepositoryImpl(db)
 	productService := service.NewProductServiceImpl(productRepository, validate)

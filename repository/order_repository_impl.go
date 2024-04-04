@@ -36,7 +36,7 @@ func (o *OrderRepositoryImpl) Delete(orderId int) {
 
 func (o *OrderRepositoryImpl) FindAll() []model.Order {
 	var order []model.Order
-	result := o.Db.Find(&order)
+	result := o.Db.Preload("User").Preload("Product").Find(&order)
 	helper.ErrorPanic(result.Error)
 	return order
 }
