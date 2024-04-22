@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"product-app-go/internal/application/request"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/helper"
 
@@ -23,9 +22,13 @@ func (o *OrderRepositoryImpl) Save(order model.Order) {
 }
 
 func (o *OrderRepositoryImpl) Update(order model.Order) {
-	var updateOrder = request.UpdateOrderRequest{Id: int(order.Id), UserId: order.UserId, ProductId: order.ProductId, Quantity: order.Quantity, User: order.User, Product: order.Product}
-	result := o.Db.Model(&order).Updates(updateOrder)
-	helper.ErrorPanic(result.Error)
+	updateData := map[string]interface{}{
+		"user_id":  order.UserId,
+		"quantity": order.Quantity,
+	}
+
+	o.Db.Model(&order).Association("Products").Replace(order.Products)
+	o.Db.Model(&order).Updates(updateData)
 }
 
 func (o *OrderRepositoryImpl) Delete(orderId int) {
@@ -35,18 +38,40 @@ func (o *OrderRepositoryImpl) Delete(orderId int) {
 }
 
 func (o *OrderRepositoryImpl) FindAll() []model.Order {
-	var order []model.Order
-	result := o.Db.Preload("User").Preload("Product").Find(&order)
-	helper.ErrorPanic(result.Error)
-	return order
+	var orders []model.Order
+	if err := o.Db.Preload("User").Preload("Products").Find(&orders).Error; err != nil {
+		return nil
+	}
+
+	return orders
 }
 
 func (o *OrderRepositoryImpl) FindById(orderId int) (model.Order, error) {
 	var order model.Order
-	result := o.Db.Find(&order, orderId)
+	result := o.Db.Preload("User").Preload("Products").First(&order, orderId)
 	if result == nil {
 		return order, errors.New("order is not found")
 	}
 
 	return order, nil
+}
+
+func (o *OrderRepositoryImpl) FindUserById(userId int) (model.User, error) {
+	var user model.User
+	result := o.Db.First(&user, userId)
+	if result.Error != nil {
+		return user, result.Error
+	}
+
+	return user, nil
+}
+
+func (o *OrderRepositoryImpl) FindProductById(productId int) (model.Product, error) {
+	var product model.Product
+	result := o.Db.First(&product, productId)
+	if result.Error != nil {
+		return product, result.Error
+	}
+
+	return product, nil
 }

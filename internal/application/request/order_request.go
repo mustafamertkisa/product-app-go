@@ -3,18 +3,18 @@ package request
 import "product-app-go/internal/domain/model"
 
 type CreateOrderRequest struct {
-	UserId    uint          `json:"userId"`
-	ProductId uint          `json:"productId"`
-	Quantity  int           `json:"quantity"`
-	User      model.User    `json:"user"`
-	Product   model.Product `json:"product"`
+	UserId     int             `json:"userId"`
+	ProductIds []int           `json:"productIds"`
+	Quantity   int             `json:"quantity"`
+	User       model.User      `json:"user"`
+	Products   []model.Product `json:"products"`
 }
 
 type UpdateOrderRequest struct {
-	Id        int           `validate:"required"`
-	UserId    uint          `json:"userId"`
-	ProductId uint          `json:"productId"`
-	Quantity  int           `json:"quantity"`
-	User      model.User    `json:"user"`
-	Product   model.Product `json:"product"`
+	Id         int             `validate:"required"`
+	UserId     int             `json:"userId"`
+	ProductIds []int           `json:"productIds"`
+	Quantity   int             `json:"quantity"`
+	User       model.User      `json:"user"`
+	Products   []model.Product `json:"products"`
 }

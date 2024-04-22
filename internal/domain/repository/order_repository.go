@@ -8,4 +8,6 @@ type OrderRepository interface {
 	Delete(orderId int)
 	FindById(orderId int) (model.Order, error)
 	FindAll() []model.Order
+	FindUserById(userId int) (model.User, error)
+	FindProductById(productId int) (model.Product, error)
 }

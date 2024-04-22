@@ -24,7 +24,7 @@ func (u *UserRepositoryImpl) Save(user model.User) {
 
 func (u *UserRepositoryImpl) Update(user model.User) {
 	var updateUser = request.UpdateUserRequest{Id: int(user.Id), Name: user.Name, Email: user.Email}
-	result := u.Db.Model(&user).Updates(updateUser)
+	result := u.Db.Model(&model.User{}).Where("id = ?", user.Id).Updates(updateUser)
 	helper.ErrorPanic(result.Error)
 }
 

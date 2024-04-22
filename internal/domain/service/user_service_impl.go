@@ -35,6 +35,7 @@ func (u *UserServiceImpl) Create(user request.CreateUserRequest) {
 func (u *UserServiceImpl) Update(user request.UpdateUserRequest) {
 	userData, err := u.UserRepository.FindById(user.Id)
 	helper.ErrorPanic(err)
+
 	userData.Name = user.Name
 	userData.Email = user.Email
 	u.UserRepository.Update(userData)

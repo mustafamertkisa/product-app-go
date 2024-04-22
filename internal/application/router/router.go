@@ -24,7 +24,7 @@ func NewRouter(productController *controller.ProductController, userController *
 	router.Route("/products/:productId", func(router fiber.Router) {
 		router.Delete("", productController.Delete)
 		router.Get("", productController.FindById)
-		router.Patch("", productController.Update)
+		router.Put("", productController.Update)
 	})
 
 	router.Route("/users", func(router fiber.Router) {
@@ -35,7 +35,7 @@ func NewRouter(productController *controller.ProductController, userController *
 	router.Route("/users/:userId", func(router fiber.Router) {
 		router.Delete("", userController.Delete)
 		router.Get("", userController.FindById)
-		router.Patch("", userController.Update)
+		router.Put("", userController.Update)
 	})
 
 	router.Route("/orders", func(router fiber.Router) {
@@ -46,7 +46,7 @@ func NewRouter(productController *controller.ProductController, userController *
 	router.Route("/orders/:orderId", func(router fiber.Router) {
 		router.Delete("", orderController.Delete)
 		router.Get("", orderController.FindById)
-		router.Patch("", orderController.Update)
+		router.Put("", orderController.Update)
 	})
 
 	return router

@@ -25,24 +25,48 @@ func NewOrderServiceImpl(orderRepository repository.OrderRepository, validate *v
 func (o *OrderServiceImpl) Create(order request.CreateOrderRequest) {
 	err := o.validate.Struct(order)
 	helper.ErrorPanic(err)
-	orderModel := model.Order{
-		UserId:    order.UserId,
-		ProductId: order.ProductId,
-		Quantity:  order.Quantity,
-		User:      order.User,
-		Product:   order.Product,
+
+	user, err := o.OrderRepository.FindUserById(order.UserId)
+	helper.ErrorPanic(err)
+
+	var products []model.Product
+	for _, productId := range order.ProductIds {
+		product, err := o.OrderRepository.FindProductById(productId)
+		helper.ErrorPanic(err)
+
+		products = append(products, product)
 	}
+
+	orderModel := model.Order{
+		UserId:   order.UserId,
+		User:     user,
+		Products: products,
+		Quantity: order.Quantity,
+	}
+
 	o.OrderRepository.Save(orderModel)
 }
 
 func (o *OrderServiceImpl) Update(order request.UpdateOrderRequest) {
 	orderData, err := o.OrderRepository.FindById(order.Id)
 	helper.ErrorPanic(err)
+
+	user, err := o.OrderRepository.FindUserById(order.UserId)
+	helper.ErrorPanic(err)
+
+	var products []model.Product
+	for _, productId := range order.ProductIds {
+		product, err := o.OrderRepository.FindProductById(productId)
+		helper.ErrorPanic(err)
+
+		products = append(products, product)
+	}
+
 	orderData.UserId = order.UserId
-	orderData.ProductId = order.ProductId
 	orderData.Quantity = order.Quantity
-	orderData.User = order.User
-	orderData.Product = order.Product
+	orderData.User = user
+	orderData.Products = products
+
 	o.OrderRepository.Update(orderData)
 }
 
@@ -53,14 +77,15 @@ func (o *OrderServiceImpl) Delete(orderId int) {
 func (o *OrderServiceImpl) FindById(orderId int) response.OrderResponse {
 	orderData, err := o.OrderRepository.FindById(orderId)
 	helper.ErrorPanic(err)
+
 	orderResponse := response.OrderResponse{
-		Id:        int(orderData.Id),
-		UserId:    orderData.UserId,
-		ProductId: orderData.ProductId,
-		Quantity:  orderData.Quantity,
-		User:      orderData.User,
-		Product:   orderData.Product,
+		Id:       int(orderData.Id),
+		UserId:   orderData.UserId,
+		Quantity: orderData.Quantity,
+		User:     orderData.User,
+		Products: orderData.Products,
 	}
+
 	return orderResponse
 }
 
@@ -70,12 +95,11 @@ func (o *OrderServiceImpl) FindAll() []response.OrderResponse {
 
 	for _, value := range result {
 		order := response.OrderResponse{
-			Id:        int(value.Id),
-			UserId:    value.UserId,
-			ProductId: value.ProductId,
-			Quantity:  value.Quantity,
-			User:      value.User,
-			Product:   value.Product,
+			Id:       int(value.Id),
+			UserId:   value.UserId,
+			Quantity: value.Quantity,
+			User:     value.User,
+			Products: value.Products,
 		}
 		orders = append(orders, order)
 	}
