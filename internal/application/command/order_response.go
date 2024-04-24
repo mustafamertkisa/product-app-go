@@ -1,4 +1,4 @@
-package response
+package command
 
 import "product-app-go/internal/domain/model"
 

@@ -1,11 +1,10 @@
 package service
 
 import (
-	"product-app-go/internal/application/request"
-	"product-app-go/internal/application/response"
+	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/internal/helper"
+	"product-app-go/utils"
 
 	"github.com/go-playground/validator"
 )
@@ -22,17 +21,17 @@ func NewOrderServiceImpl(orderRepository repository.OrderRepository, validate *v
 	}
 }
 
-func (o *OrderServiceImpl) Create(order request.CreateOrderRequest) {
+func (o *OrderServiceImpl) Create(order command.CreateOrderRequest) {
 	err := o.validate.Struct(order)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	user, err := o.OrderRepository.FindUserById(order.UserId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	var products []model.Product
 	for _, productId := range order.ProductIds {
 		product, err := o.OrderRepository.FindProductById(productId)
-		helper.ErrorPanic(err)
+		utils.ErrorPanic(err)
 
 		products = append(products, product)
 	}
@@ -47,17 +46,17 @@ func (o *OrderServiceImpl) Create(order request.CreateOrderRequest) {
 	o.OrderRepository.Save(orderModel)
 }
 
-func (o *OrderServiceImpl) Update(order request.UpdateOrderRequest) {
+func (o *OrderServiceImpl) Update(order command.UpdateOrderRequest) {
 	orderData, err := o.OrderRepository.FindById(order.Id)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	user, err := o.OrderRepository.FindUserById(order.UserId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	var products []model.Product
 	for _, productId := range order.ProductIds {
 		product, err := o.OrderRepository.FindProductById(productId)
-		helper.ErrorPanic(err)
+		utils.ErrorPanic(err)
 
 		products = append(products, product)
 	}
@@ -74,11 +73,11 @@ func (o *OrderServiceImpl) Delete(orderId int) {
 	o.OrderRepository.Delete(orderId)
 }
 
-func (o *OrderServiceImpl) FindById(orderId int) response.OrderResponse {
+func (o *OrderServiceImpl) FindById(orderId int) command.OrderResponse {
 	orderData, err := o.OrderRepository.FindById(orderId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
-	orderResponse := response.OrderResponse{
+	orderResponse := command.OrderResponse{
 		Id:       int(orderData.Id),
 		UserId:   orderData.UserId,
 		Quantity: orderData.Quantity,
@@ -89,12 +88,12 @@ func (o *OrderServiceImpl) FindById(orderId int) response.OrderResponse {
 	return orderResponse
 }
 
-func (o *OrderServiceImpl) FindAll() []response.OrderResponse {
+func (o *OrderServiceImpl) FindAll() []command.OrderResponse {
 	result := o.OrderRepository.FindAll()
-	var orders []response.OrderResponse
+	var orders []command.OrderResponse
 
 	for _, value := range result {
-		order := response.OrderResponse{
+		order := command.OrderResponse{
 			Id:       int(value.Id),
 			UserId:   value.UserId,
 			Quantity: value.Quantity,

@@ -1,10 +1,9 @@
-package controller
+package api
 
 import (
-	"product-app-go/internal/application/request"
-	"product-app-go/internal/application/response"
-	"product-app-go/internal/domain/service"
-	"product-app-go/internal/helper"
+	"product-app-go/internal/application/command"
+	"product-app-go/internal/application/service"
+	"product-app-go/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,13 +18,13 @@ func NewUserController(service service.UserService) *UserController {
 }
 
 func (controller *UserController) Create(ctx *fiber.Ctx) error {
-	createUserRequest := request.CreateUserRequest{}
+	createUserRequest := command.CreateUserRequest{}
 	err := ctx.BodyParser(&createUserRequest)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	controller.userService.Create(createUserRequest)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully created user data",
@@ -36,19 +35,19 @@ func (controller *UserController) Create(ctx *fiber.Ctx) error {
 }
 
 func (controller *UserController) Update(ctx *fiber.Ctx) error {
-	updateUserRequest := request.UpdateUserRequest{}
+	updateUserRequest := command.UpdateUserRequest{}
 	err := ctx.BodyParser(&updateUserRequest)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	updateUserRequest.Id = id
 
 	controller.userService.Update(updateUserRequest)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully updated user data",
@@ -61,10 +60,10 @@ func (controller *UserController) Update(ctx *fiber.Ctx) error {
 func (controller *UserController) Delete(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 	controller.userService.Delete(id)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully deleted user data",
@@ -77,11 +76,11 @@ func (controller *UserController) Delete(ctx *fiber.Ctx) error {
 func (controller *UserController) FindById(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	userResponse := controller.userService.FindById(id)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully get user data",
@@ -94,7 +93,7 @@ func (controller *UserController) FindById(ctx *fiber.Ctx) error {
 func (controller *UserController) FindAll(ctx *fiber.Ctx) error {
 	userResponse := controller.userService.FindAll()
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully get users data",

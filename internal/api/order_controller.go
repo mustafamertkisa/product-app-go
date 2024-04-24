@@ -1,10 +1,9 @@
-package controller
+package api
 
 import (
-	"product-app-go/internal/application/request"
-	"product-app-go/internal/application/response"
-	"product-app-go/internal/domain/service"
-	"product-app-go/internal/helper"
+	"product-app-go/internal/application/command"
+	"product-app-go/internal/application/service"
+	"product-app-go/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,13 +18,13 @@ func NewOrderController(service service.OrderService) *OrderController {
 }
 
 func (controller *OrderController) Create(ctx *fiber.Ctx) error {
-	createOrderRequest := request.CreateOrderRequest{}
+	createOrderRequest := command.CreateOrderRequest{}
 	err := ctx.BodyParser(&createOrderRequest)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	controller.orderService.Create(createOrderRequest)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully created order data",
@@ -36,19 +35,19 @@ func (controller *OrderController) Create(ctx *fiber.Ctx) error {
 }
 
 func (controller *OrderController) Update(ctx *fiber.Ctx) error {
-	updateOrderRequest := request.UpdateOrderRequest{}
+	updateOrderRequest := command.UpdateOrderRequest{}
 	err := ctx.BodyParser(&updateOrderRequest)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	updateOrderRequest.Id = id
 
 	controller.orderService.Update(updateOrderRequest)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully updated order data",
@@ -61,10 +60,10 @@ func (controller *OrderController) Update(ctx *fiber.Ctx) error {
 func (controller *OrderController) Delete(ctx *fiber.Ctx) error {
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 	controller.orderService.Delete(id)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully deleted order data",
@@ -77,11 +76,11 @@ func (controller *OrderController) Delete(ctx *fiber.Ctx) error {
 func (controller *OrderController) FindById(ctx *fiber.Ctx) error {
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
-	helper.ErrorPanic(err)
+	utils.ErrorPanic(err)
 
 	orderResponse := controller.orderService.FindById(id)
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully get order data",
@@ -94,7 +93,7 @@ func (controller *OrderController) FindById(ctx *fiber.Ctx) error {
 func (controller *OrderController) FindAll(ctx *fiber.Ctx) error {
 	orderResponse := controller.orderService.FindAll()
 
-	webResponse := response.Response{
+	webResponse := command.Response{
 		Code:    200,
 		Status:  "Ok",
 		Message: "Successfully get orders data",

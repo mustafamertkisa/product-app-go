@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"log"
-	"product-app-go/internal/application/controller"
+	"product-app-go/internal/api"
 	"product-app-go/internal/application/router"
+	"product-app-go/internal/application/service"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/internal/domain/service"
 	"product-app-go/internal/infrastructure/config"
 
 	"github.com/go-playground/validator"
@@ -29,15 +29,15 @@ func main() {
 
 	productRepository := repository.NewProductRepositoryImpl(db)
 	productService := service.NewProductServiceImpl(productRepository, validate)
-	productController := controller.NewProductController(productService)
+	productController := api.NewProductController(productService)
 
 	userRepository := repository.NewUserRepositoryImpl(db)
 	userService := service.NewUserServiceImpl(userRepository, validate)
-	userController := controller.NewUserController(userService)
+	userController := api.NewUserController(userService)
 
 	orderRepository := repository.NewOrderRepositoryImpl(db)
 	orderService := service.NewOrderServiceImpl(orderRepository, validate)
-	orderController := controller.NewOrderController(orderService)
+	orderController := api.NewOrderController(orderService)
 
 	routes := router.NewRouter(productController, userController, orderController)
 
