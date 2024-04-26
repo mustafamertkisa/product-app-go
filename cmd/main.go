@@ -8,7 +8,7 @@ import (
 	"product-app-go/internal/application/service"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/internal/infrastructure/config"
+	"product-app-go/internal/infrastructure"
 
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
@@ -17,12 +17,12 @@ import (
 func main() {
 	fmt.Printf("Run service...")
 
-	loadConfig, err := config.LoadConfig("./")
+	loadConfig, err := infrastructure.LoadConfig("./")
 	if err != nil {
 		log.Fatal("could not load env", err)
 	}
 
-	db := config.ConnectionDB(&loadConfig)
+	db := infrastructure.ConnectionDB(&loadConfig)
 	validate := validator.New()
 
 	db.AutoMigrate(&model.Product{}, &model.User{}, &model.Order{})
