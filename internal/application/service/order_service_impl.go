@@ -4,7 +4,6 @@ import (
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/utils"
 
 	"github.com/go-playground/validator"
 )
@@ -23,15 +22,21 @@ func NewOrderServiceImpl(orderRepository repository.OrderRepository, validate *v
 
 func (o *OrderServiceImpl) Create(order command.CreateOrderRequest) {
 	err := o.validate.Struct(order)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	user, err := o.OrderRepository.FindUserById(order.UserId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	var products []model.Product
 	for _, productId := range order.ProductIds {
 		product, err := o.OrderRepository.FindProductById(productId)
-		utils.ErrorPanic(err)
+		if err != nil {
+			panic(err)
+		}
 
 		products = append(products, product)
 	}
@@ -48,15 +53,21 @@ func (o *OrderServiceImpl) Create(order command.CreateOrderRequest) {
 
 func (o *OrderServiceImpl) Update(order command.UpdateOrderRequest) {
 	orderData, err := o.OrderRepository.FindById(order.Id)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	user, err := o.OrderRepository.FindUserById(order.UserId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	var products []model.Product
 	for _, productId := range order.ProductIds {
 		product, err := o.OrderRepository.FindProductById(productId)
-		utils.ErrorPanic(err)
+		if err != nil {
+			panic(err)
+		}
 
 		products = append(products, product)
 	}
@@ -75,7 +86,9 @@ func (o *OrderServiceImpl) Delete(orderId int) {
 
 func (o *OrderServiceImpl) FindById(orderId int) command.OrderResponse {
 	orderData, err := o.OrderRepository.FindById(orderId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	orderResponse := command.OrderResponse{
 		Id:       int(orderData.Id),

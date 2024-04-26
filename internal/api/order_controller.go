@@ -3,7 +3,6 @@ package api
 import (
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/application/service"
-	"product-app-go/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,7 +19,9 @@ func NewOrderController(service service.OrderService) *OrderController {
 func (controller *OrderController) Create(ctx *fiber.Ctx) error {
 	createOrderRequest := command.CreateOrderRequest{}
 	err := ctx.BodyParser(&createOrderRequest)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	controller.orderService.Create(createOrderRequest)
 
@@ -37,11 +38,15 @@ func (controller *OrderController) Create(ctx *fiber.Ctx) error {
 func (controller *OrderController) Update(ctx *fiber.Ctx) error {
 	updateOrderRequest := command.UpdateOrderRequest{}
 	err := ctx.BodyParser(&updateOrderRequest)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	updateOrderRequest.Id = id
 
@@ -60,7 +65,9 @@ func (controller *OrderController) Update(ctx *fiber.Ctx) error {
 func (controller *OrderController) Delete(ctx *fiber.Ctx) error {
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	controller.orderService.Delete(id)
 
 	webResponse := command.Response{
@@ -76,7 +83,9 @@ func (controller *OrderController) Delete(ctx *fiber.Ctx) error {
 func (controller *OrderController) FindById(ctx *fiber.Ctx) error {
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	orderResponse := controller.orderService.FindById(id)
 

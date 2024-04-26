@@ -3,7 +3,6 @@ package api
 import (
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/application/service"
-	"product-app-go/utils"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -20,7 +19,9 @@ func NewUserController(service service.UserService) *UserController {
 func (controller *UserController) Create(ctx *fiber.Ctx) error {
 	createUserRequest := command.CreateUserRequest{}
 	err := ctx.BodyParser(&createUserRequest)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	controller.userService.Create(createUserRequest)
 
@@ -37,11 +38,15 @@ func (controller *UserController) Create(ctx *fiber.Ctx) error {
 func (controller *UserController) Update(ctx *fiber.Ctx) error {
 	updateUserRequest := command.UpdateUserRequest{}
 	err := ctx.BodyParser(&updateUserRequest)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	updateUserRequest.Id = id
 
@@ -60,7 +65,9 @@ func (controller *UserController) Update(ctx *fiber.Ctx) error {
 func (controller *UserController) Delete(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	controller.userService.Delete(id)
 
 	webResponse := command.Response{
@@ -76,7 +83,9 @@ func (controller *UserController) Delete(ctx *fiber.Ctx) error {
 func (controller *UserController) FindById(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	userResponse := controller.userService.FindById(id)
 

@@ -4,7 +4,6 @@ import (
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/utils"
 
 	"github.com/go-playground/validator"
 )
@@ -23,7 +22,9 @@ func NewUserServiceImpl(userRepository repository.UserRepository, validate *vali
 
 func (u *UserServiceImpl) Create(user command.CreateUserRequest) {
 	err := u.validate.Struct(user)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	userModel := model.User{
 		Name:  user.Name,
 		Email: user.Email,
@@ -33,7 +34,9 @@ func (u *UserServiceImpl) Create(user command.CreateUserRequest) {
 
 func (u *UserServiceImpl) Update(user command.UpdateUserRequest) {
 	userData, err := u.UserRepository.FindById(user.Id)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	userData.Name = user.Name
 	userData.Email = user.Email
@@ -46,7 +49,9 @@ func (u *UserServiceImpl) Delete(userId int) {
 
 func (u *UserServiceImpl) FindById(userId int) command.UserResponse {
 	userData, err := u.UserRepository.FindById(userId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	userResponse := command.UserResponse{
 		Id:    int(userData.Id),
 		Name:  userData.Name,

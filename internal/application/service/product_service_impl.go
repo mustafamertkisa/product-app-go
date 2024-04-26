@@ -4,7 +4,6 @@ import (
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/utils"
 
 	"github.com/go-playground/validator"
 )
@@ -23,7 +22,9 @@ func NewProductServiceImpl(productRepository repository.ProductRepository, valid
 
 func (p *ProductServiceImpl) Create(product command.CreateProductRequest) {
 	err := p.validate.Struct(product)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	productModel := model.Product{
 		Name:  product.Name,
 		Price: product.Price,
@@ -33,7 +34,9 @@ func (p *ProductServiceImpl) Create(product command.CreateProductRequest) {
 
 func (p *ProductServiceImpl) Update(product command.UpdateProductRequest) {
 	productData, err := p.ProductRepository.FindById(product.Id)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	productData.Name = product.Name
 	productData.Price = product.Price
 	p.ProductRepository.Update(productData)
@@ -45,7 +48,9 @@ func (p *ProductServiceImpl) Delete(productId int) {
 
 func (p *ProductServiceImpl) FindById(productId int) command.ProductResponse {
 	productData, err := p.ProductRepository.FindById(productId)
-	utils.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	productResponse := command.ProductResponse{
 		Id:    int(productData.Id),
 		Name:  productData.Name,

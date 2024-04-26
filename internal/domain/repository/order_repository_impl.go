@@ -3,7 +3,6 @@ package repository
 import (
 	"errors"
 	"product-app-go/internal/domain/model"
-	"product-app-go/utils"
 
 	"gorm.io/gorm"
 )
@@ -18,7 +17,9 @@ func NewOrderRepositoryImpl(Db *gorm.DB) OrderRepository {
 
 func (o *OrderRepositoryImpl) Save(order model.Order) {
 	result := o.Db.Create(&order)
-	utils.ErrorPanic(result.Error)
+	if result.Error != nil {
+		panic(result.Error)
+	}
 }
 
 func (o *OrderRepositoryImpl) Update(order model.Order) {
@@ -34,7 +35,9 @@ func (o *OrderRepositoryImpl) Update(order model.Order) {
 func (o *OrderRepositoryImpl) Delete(orderId int) {
 	var order model.Order
 	result := o.Db.Where("id = ?", orderId).Delete(&order)
-	utils.ErrorPanic(result.Error)
+	if result.Error != nil {
+		panic(result.Error)
+	}
 }
 
 func (o *OrderRepositoryImpl) FindAll() []model.Order {
