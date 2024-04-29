@@ -1,12 +1,12 @@
 package router
 
 import (
-	"product-app-go/internal/application/controller"
+	"product-app-go/internal/api"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewRouter(productController *controller.ProductController, userController *controller.UserController, orderController *controller.OrderController) *fiber.App {
+func NewRouter(productController *api.ProductController, userController *api.UserController, orderController *api.OrderController) *fiber.App {
 	router := fiber.New()
 
 	router.Get("/healthchecker", func(c *fiber.Ctx) error {

@@ -1,11 +1,9 @@
 package service
 
 import (
-	"product-app-go/internal/application/request"
-	"product-app-go/internal/application/response"
+	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/internal/helper"
 
 	"github.com/go-playground/validator"
 )
@@ -22,9 +20,11 @@ func NewUserServiceImpl(userRepository repository.UserRepository, validate *vali
 	}
 }
 
-func (u *UserServiceImpl) Create(user request.CreateUserRequest) {
+func (u *UserServiceImpl) Create(user command.CreateUserRequest) {
 	err := u.validate.Struct(user)
-	helper.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	userModel := model.User{
 		Name:  user.Name,
 		Email: user.Email,
@@ -32,9 +32,11 @@ func (u *UserServiceImpl) Create(user request.CreateUserRequest) {
 	u.UserRepository.Save(userModel)
 }
 
-func (u *UserServiceImpl) Update(user request.UpdateUserRequest) {
+func (u *UserServiceImpl) Update(user command.UpdateUserRequest) {
 	userData, err := u.UserRepository.FindById(user.Id)
-	helper.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 
 	userData.Name = user.Name
 	userData.Email = user.Email
@@ -45,10 +47,12 @@ func (u *UserServiceImpl) Delete(userId int) {
 	u.UserRepository.Delete(userId)
 }
 
-func (u *UserServiceImpl) FindById(userId int) response.UserResponse {
+func (u *UserServiceImpl) FindById(userId int) command.UserResponse {
 	userData, err := u.UserRepository.FindById(userId)
-	helper.ErrorPanic(err)
-	userResponse := response.UserResponse{
+	if err != nil {
+		panic(err)
+	}
+	userResponse := command.UserResponse{
 		Id:    int(userData.Id),
 		Name:  userData.Name,
 		Email: userData.Email,
@@ -56,12 +60,12 @@ func (u *UserServiceImpl) FindById(userId int) response.UserResponse {
 	return userResponse
 }
 
-func (u *UserServiceImpl) FindAll() []response.UserResponse {
+func (u *UserServiceImpl) FindAll() []command.UserResponse {
 	result := u.UserRepository.FindAll()
-	var users []response.UserResponse
+	var users []command.UserResponse
 
 	for _, value := range result {
-		user := response.UserResponse{
+		user := command.UserResponse{
 			Id:    int(value.Id),
 			Name:  value.Name,
 			Email: value.Email,

@@ -1,4 +1,4 @@
-package request
+package command
 
 type CreateUserRequest struct {
 	Name  string `validate:"required,min=2,max=100" json:"name"`

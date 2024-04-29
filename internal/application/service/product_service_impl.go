@@ -1,11 +1,9 @@
 package service
 
 import (
-	"product-app-go/internal/application/request"
-	"product-app-go/internal/application/response"
+	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
-	"product-app-go/internal/helper"
 
 	"github.com/go-playground/validator"
 )
@@ -22,9 +20,11 @@ func NewProductServiceImpl(productRepository repository.ProductRepository, valid
 	}
 }
 
-func (p *ProductServiceImpl) Create(product request.CreateProductRequest) {
+func (p *ProductServiceImpl) Create(product command.CreateProductRequest) {
 	err := p.validate.Struct(product)
-	helper.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	productModel := model.Product{
 		Name:  product.Name,
 		Price: product.Price,
@@ -32,9 +32,11 @@ func (p *ProductServiceImpl) Create(product request.CreateProductRequest) {
 	p.ProductRepository.Save(productModel)
 }
 
-func (p *ProductServiceImpl) Update(product request.UpdateProductRequest) {
+func (p *ProductServiceImpl) Update(product command.UpdateProductRequest) {
 	productData, err := p.ProductRepository.FindById(product.Id)
-	helper.ErrorPanic(err)
+	if err != nil {
+		panic(err)
+	}
 	productData.Name = product.Name
 	productData.Price = product.Price
 	p.ProductRepository.Update(productData)
@@ -44,10 +46,12 @@ func (p *ProductServiceImpl) Delete(productId int) {
 	p.ProductRepository.Delete(productId)
 }
 
-func (p *ProductServiceImpl) FindById(productId int) response.ProductResponse {
+func (p *ProductServiceImpl) FindById(productId int) command.ProductResponse {
 	productData, err := p.ProductRepository.FindById(productId)
-	helper.ErrorPanic(err)
-	productResponse := response.ProductResponse{
+	if err != nil {
+		panic(err)
+	}
+	productResponse := command.ProductResponse{
 		Id:    int(productData.Id),
 		Name:  productData.Name,
 		Price: productData.Price,
@@ -55,12 +59,12 @@ func (p *ProductServiceImpl) FindById(productId int) response.ProductResponse {
 	return productResponse
 }
 
-func (p *ProductServiceImpl) FindAll() []response.ProductResponse {
+func (p *ProductServiceImpl) FindAll() []command.ProductResponse {
 	result := p.ProductRepository.FindAll()
-	var products []response.ProductResponse
+	var products []command.ProductResponse
 
 	for _, value := range result {
-		product := response.ProductResponse{
+		product := command.ProductResponse{
 			Id:    int(value.Id),
 			Name:  value.Name,
 			Price: value.Price,
