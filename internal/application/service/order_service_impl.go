@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 	"product-app-go/internal/domain/repository"
@@ -20,22 +21,22 @@ func NewOrderServiceImpl(orderRepository repository.OrderRepository, validate *v
 	}
 }
 
-func (o *OrderServiceImpl) Create(order command.CreateOrderRequest) {
+func (o *OrderServiceImpl) Create(order command.CreateOrderRequest) error {
 	err := o.validate.Struct(order)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	user, err := o.OrderRepository.FindUserById(order.UserId)
 	if err != nil {
-		panic(err)
+		return errors.New("failed to find user: " + err.Error())
 	}
 
 	var products []model.Product
 	for _, productId := range order.ProductIds {
 		product, err := o.OrderRepository.FindProductById(productId)
 		if err != nil {
-			panic(err)
+			return errors.New("failed to find product: " + err.Error())
 		}
 
 		products = append(products, product)
@@ -48,25 +49,30 @@ func (o *OrderServiceImpl) Create(order command.CreateOrderRequest) {
 		Quantity: order.Quantity,
 	}
 
-	o.OrderRepository.Save(orderModel)
+	err = o.OrderRepository.Save(orderModel)
+	if err != nil {
+		return errors.New("failed to save order: " + err.Error())
+	}
+
+	return nil
 }
 
-func (o *OrderServiceImpl) Update(order command.UpdateOrderRequest) {
+func (o *OrderServiceImpl) Update(order command.UpdateOrderRequest) error {
 	orderData, err := o.OrderRepository.FindById(order.Id)
 	if err != nil {
-		panic(err)
+		return errors.New("failed to find order: " + err.Error())
 	}
 
 	user, err := o.OrderRepository.FindUserById(order.UserId)
 	if err != nil {
-		panic(err)
+		return errors.New("failed to find user: " + err.Error())
 	}
 
 	var products []model.Product
 	for _, productId := range order.ProductIds {
 		product, err := o.OrderRepository.FindProductById(productId)
 		if err != nil {
-			panic(err)
+			return errors.New("failed to find product: " + err.Error())
 		}
 
 		products = append(products, product)
@@ -77,17 +83,27 @@ func (o *OrderServiceImpl) Update(order command.UpdateOrderRequest) {
 	orderData.User = user
 	orderData.Products = products
 
-	o.OrderRepository.Update(orderData)
+	err = o.OrderRepository.Update(orderData)
+	if err != nil {
+		return errors.New("failed to update order: " + err.Error())
+	}
+
+	return nil
 }
 
-func (o *OrderServiceImpl) Delete(orderId int) {
-	o.OrderRepository.Delete(orderId)
+func (o *OrderServiceImpl) Delete(orderId int) error {
+	err := o.OrderRepository.Delete(orderId)
+	if err != nil {
+		return errors.New("failed to delete order: " + err.Error())
+	}
+
+	return nil
 }
 
-func (o *OrderServiceImpl) FindById(orderId int) command.OrderResponse {
+func (o *OrderServiceImpl) FindById(orderId int) (command.OrderResponse, error) {
 	orderData, err := o.OrderRepository.FindById(orderId)
 	if err != nil {
-		panic(err)
+		return command.OrderResponse{}, errors.New("failed to find order: " + err.Error())
 	}
 
 	orderResponse := command.OrderResponse{
@@ -98,11 +114,15 @@ func (o *OrderServiceImpl) FindById(orderId int) command.OrderResponse {
 		Products: orderData.Products,
 	}
 
-	return orderResponse
+	return orderResponse, nil
 }
 
-func (o *OrderServiceImpl) FindAll() []command.OrderResponse {
-	result := o.OrderRepository.FindAll()
+func (o *OrderServiceImpl) FindAll() ([]command.OrderResponse, error) {
+	result, err := o.OrderRepository.FindAll()
+	if err != nil {
+		return nil, errors.New("failed to find orders: " + err.Error())
+	}
+
 	var orders []command.OrderResponse
 
 	for _, value := range result {
@@ -116,5 +136,5 @@ func (o *OrderServiceImpl) FindAll() []command.OrderResponse {
 		orders = append(orders, order)
 	}
 
-	return orders
+	return orders, nil
 }

@@ -15,38 +15,47 @@ func NewOrderRepositoryImpl(Db *gorm.DB) OrderRepository {
 	return &OrderRepositoryImpl{Db: Db}
 }
 
-func (o *OrderRepositoryImpl) Save(order model.Order) {
+func (o *OrderRepositoryImpl) Save(order model.Order) error {
 	result := o.Db.Create(&order)
 	if result.Error != nil {
-		panic(result.Error)
+		return result.Error
 	}
+
+	return nil
 }
 
-func (o *OrderRepositoryImpl) Update(order model.Order) {
+func (o *OrderRepositoryImpl) Update(order model.Order) error {
 	updateData := map[string]interface{}{
 		"user_id":  order.UserId,
 		"quantity": order.Quantity,
 	}
 
 	o.Db.Model(&order).Association("Products").Replace(order.Products)
-	o.Db.Model(&order).Updates(updateData)
+	result := o.Db.Model(&order).Updates(updateData)
+	if result.Error != nil {
+		return result.Error
+	}
+
+	return nil
 }
 
-func (o *OrderRepositoryImpl) Delete(orderId int) {
+func (o *OrderRepositoryImpl) Delete(orderId int) error {
 	var order model.Order
 	result := o.Db.Where("id = ?", orderId).Delete(&order)
 	if result.Error != nil {
-		panic(result.Error)
+		return result.Error
 	}
+
+	return nil
 }
 
-func (o *OrderRepositoryImpl) FindAll() []model.Order {
+func (o *OrderRepositoryImpl) FindAll() ([]model.Order, error) {
 	var orders []model.Order
 	if err := o.Db.Preload("User").Preload("Products").Find(&orders).Error; err != nil {
-		return nil
+		return nil, err
 	}
 
-	return orders
+	return orders, nil
 }
 
 func (o *OrderRepositoryImpl) FindById(orderId int) (model.Order, error) {

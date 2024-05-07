@@ -20,7 +20,7 @@ func (controller *ProductController) Create(ctx *fiber.Ctx) error {
 	createProductRequest := command.CreateProductRequest{}
 	err := ctx.BodyParser(&createProductRequest)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	controller.productService.Create(createProductRequest)
@@ -39,13 +39,13 @@ func (controller *ProductController) Update(ctx *fiber.Ctx) error {
 	updateProductRequest := command.UpdateProductRequest{}
 	err := ctx.BodyParser(&updateProductRequest)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	productId := ctx.Params("productId")
 	id, err := strconv.Atoi(productId)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	updateProductRequest.Id = id
@@ -66,8 +66,9 @@ func (controller *ProductController) Delete(ctx *fiber.Ctx) error {
 	productId := ctx.Params("productId")
 	id, err := strconv.Atoi(productId)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
 	controller.productService.Delete(id)
 
 	webResponse := command.Response{
@@ -84,10 +85,13 @@ func (controller *ProductController) FindById(ctx *fiber.Ctx) error {
 	productId := ctx.Params("productId")
 	id, err := strconv.Atoi(productId)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	productResponse := controller.productService.FindById(id)
+	productResponse, err := controller.productService.FindById(id)
+	if err != nil {
+		return err
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -100,7 +104,10 @@ func (controller *ProductController) FindById(ctx *fiber.Ctx) error {
 }
 
 func (controller *ProductController) FindAll(ctx *fiber.Ctx) error {
-	productResponse := controller.productService.FindAll()
+	productResponse, err := controller.productService.FindAll()
+	if err != nil {
+		return err
+	}
 
 	webResponse := command.Response{
 		Code:    200,

@@ -20,7 +20,7 @@ func (controller *UserController) Create(ctx *fiber.Ctx) error {
 	createUserRequest := command.CreateUserRequest{}
 	err := ctx.BodyParser(&createUserRequest)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	controller.userService.Create(createUserRequest)
@@ -39,13 +39,13 @@ func (controller *UserController) Update(ctx *fiber.Ctx) error {
 	updateUserRequest := command.UpdateUserRequest{}
 	err := ctx.BodyParser(&updateUserRequest)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	updateUserRequest.Id = id
@@ -66,8 +66,9 @@ func (controller *UserController) Delete(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
 	controller.userService.Delete(id)
 
 	webResponse := command.Response{
@@ -84,10 +85,13 @@ func (controller *UserController) FindById(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	userResponse := controller.userService.FindById(id)
+	userResponse, err := controller.userService.FindById(id)
+	if err != nil {
+		return err
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -100,7 +104,10 @@ func (controller *UserController) FindById(ctx *fiber.Ctx) error {
 }
 
 func (controller *UserController) FindAll(ctx *fiber.Ctx) error {
-	userResponse := controller.userService.FindAll()
+	userResponse, err := controller.userService.FindAll()
+	if err != nil {
+		return err
+	}
 
 	webResponse := command.Response{
 		Code:    200,

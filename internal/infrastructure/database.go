@@ -7,9 +7,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func ConnectionDB(config *Config) *gorm.DB {
-	dsn := config.DBUrl
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+func ConnectionDB(dbUrl string) *gorm.DB {
+	db, err := gorm.Open(postgres.Open(dbUrl), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}

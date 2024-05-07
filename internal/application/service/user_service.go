@@ -5,9 +5,9 @@ import (
 )
 
 type UserService interface {
-	Create(user command.CreateUserRequest)
-	Update(user command.UpdateUserRequest)
-	Delete(userId int)
-	FindById(userId int) command.UserResponse
-	FindAll() []command.UserResponse
+	Create(user command.CreateUserRequest) error
+	Update(user command.UpdateUserRequest) error
+	Delete(userId int) error
+	FindById(userId int) (command.UserResponse, error)
+	FindAll() ([]command.UserResponse, error)
 }

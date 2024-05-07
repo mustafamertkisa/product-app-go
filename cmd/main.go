@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"product-app-go/internal/api"
 	"product-app-go/internal/application/router"
 	"product-app-go/internal/application/service"
@@ -12,17 +13,20 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 )
 
 func main() {
 	fmt.Printf("Run service...")
 
-	loadConfig, err := infrastructure.LoadConfig("./")
+	err := godotenv.Load("app.env")
 	if err != nil {
-		log.Fatal("could not load env", err)
+		log.Fatalf("Error loading env file")
 	}
 
-	db := infrastructure.ConnectionDB(&loadConfig)
+	dbUrl := os.Getenv("POSTGRES_URL")
+
+	db := infrastructure.ConnectionDB(dbUrl)
 	validate := validator.New()
 
 	db.AutoMigrate(&model.Product{}, &model.User{}, &model.Order{})
@@ -39,7 +43,10 @@ func main() {
 	orderService := service.NewOrderServiceImpl(orderRepository, validate)
 	orderController := api.NewOrderController(orderService)
 
-	routes := router.NewRouter(productController, userController, orderController)
+	authService := service.NewAuthServiceImpl(userRepository, validate)
+	authController := api.NewAuthController(authService)
+
+	routes := router.NewRouter(productController, userController, orderController, authController)
 
 	app := fiber.New()
 	app.Mount("/api", routes)
