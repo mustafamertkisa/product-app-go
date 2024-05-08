@@ -21,8 +21,8 @@ func NewProductServiceImpl(productRepository repository.ProductRepository, valid
 	}
 }
 
-func (p *ProductServiceImpl) Create(product command.CreateProductRequest) error {
-	err := p.validate.Struct(product)
+func (s *ProductServiceImpl) Create(product command.CreateProductRequest) error {
+	err := s.validate.Struct(product)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (p *ProductServiceImpl) Create(product command.CreateProductRequest) error 
 		Price: product.Price,
 	}
 
-	err = p.ProductRepository.Save(productModel)
+	err = s.ProductRepository.Save(productModel)
 	if err != nil {
 		return errors.New("failed to save product: " + err.Error())
 	}
@@ -40,15 +40,15 @@ func (p *ProductServiceImpl) Create(product command.CreateProductRequest) error 
 	return nil
 }
 
-func (p *ProductServiceImpl) Update(product command.UpdateProductRequest) error {
-	productData, err := p.ProductRepository.FindById(product.Id)
+func (s *ProductServiceImpl) Update(product command.UpdateProductRequest) error {
+	productData, err := s.ProductRepository.FindById(product.Id)
 	if err != nil {
 		return errors.New("failed to find product: " + err.Error())
 	}
 
 	productData.Name = product.Name
 	productData.Price = product.Price
-	err = p.ProductRepository.Update(productData)
+	err = s.ProductRepository.Update(productData)
 	if err != nil {
 		return errors.New("failed to update product: " + err.Error())
 	}
@@ -56,8 +56,8 @@ func (p *ProductServiceImpl) Update(product command.UpdateProductRequest) error 
 	return nil
 }
 
-func (p *ProductServiceImpl) Delete(productId int) error {
-	err := p.ProductRepository.Delete(productId)
+func (s *ProductServiceImpl) Delete(productId int) error {
+	err := s.ProductRepository.Delete(productId)
 	if err != nil {
 		return errors.New("failed to delete product: " + err.Error())
 	}
@@ -65,8 +65,8 @@ func (p *ProductServiceImpl) Delete(productId int) error {
 	return nil
 }
 
-func (p *ProductServiceImpl) FindById(productId int) (command.ProductResponse, error) {
-	productData, err := p.ProductRepository.FindById(productId)
+func (s *ProductServiceImpl) FindById(productId int) (command.ProductResponse, error) {
+	productData, err := s.ProductRepository.FindById(productId)
 	if err != nil {
 		return command.ProductResponse{}, errors.New("failed to find product: " + err.Error())
 	}
@@ -80,8 +80,8 @@ func (p *ProductServiceImpl) FindById(productId int) (command.ProductResponse, e
 	return productResponse, nil
 }
 
-func (p *ProductServiceImpl) FindAll() ([]command.ProductResponse, error) {
-	result, err := p.ProductRepository.FindAll()
+func (s *ProductServiceImpl) FindAll() ([]command.ProductResponse, error) {
+	result, err := s.ProductRepository.FindAll()
 	if err != nil {
 		return nil, errors.New("failed to find products: " + err.Error())
 	}

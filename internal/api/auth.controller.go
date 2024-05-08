@@ -19,7 +19,9 @@ func (controller *AuthController) Register(ctx *fiber.Ctx) error {
 	createUserRequest := command.CreateUserRequest{}
 	err := ctx.BodyParser(&createUserRequest)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	controller.authService.Register(createUserRequest)
@@ -38,12 +40,16 @@ func (controller *AuthController) Login(ctx *fiber.Ctx) error {
 	userLoginRequest := command.UserLoginRequest{}
 	err := ctx.BodyParser(&userLoginRequest)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	userToken, err := controller.authService.Login(userLoginRequest, ctx)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	webResponse := command.Response{
@@ -54,4 +60,31 @@ func (controller *AuthController) Login(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.Status(fiber.StatusCreated).JSON(webResponse)
+}
+
+func (c *AuthController) User(ctx *fiber.Ctx) error {
+	cookie := ctx.Cookies("jwt")
+
+	user, err := c.authService.GetUserFromToken(cookie)
+	if err != nil {
+		ctx.Status(fiber.StatusUnauthorized)
+		return ctx.JSON(fiber.Map{
+			"message": "unauthenticated",
+		})
+	}
+
+	return ctx.JSON(user)
+}
+
+func (c *AuthController) Logout(ctx *fiber.Ctx) error {
+	err := c.authService.Logout(ctx)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"message": "Logout success",
+	})
 }

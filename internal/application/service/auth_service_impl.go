@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
@@ -27,8 +28,8 @@ func NewAuthServiceImpl(userRepository repository.UserRepository, validate *vali
 	}
 }
 
-func (a *AuthServiceImpl) Register(user command.CreateUserRequest) error {
-	err := a.validate.Struct(user)
+func (s *AuthServiceImpl) Register(user command.CreateUserRequest) error {
+	err := s.validate.Struct(user)
 	if err != nil {
 		return errors.New("validation failed: " + err.Error())
 	}
@@ -41,13 +42,13 @@ func (a *AuthServiceImpl) Register(user command.CreateUserRequest) error {
 		Password: password,
 	}
 
-	a.UserRepository.Save(userModel)
+	s.UserRepository.Save(userModel)
 
 	return nil
 }
 
-func (a *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (string, error) {
-	userData, err := a.UserRepository.FindByEmail(user.Email)
+func (s *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (string, error) {
+	userData, err := s.UserRepository.FindByEmail(user.Email)
 	if err != nil {
 		return "", err
 	}
@@ -82,4 +83,42 @@ func (a *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (
 	ctx.Cookie(&cookie)
 
 	return token, nil
+}
+
+func (s *AuthServiceImpl) GetUserFromToken(cookie string) (model.User, error) {
+	secretKey := os.Getenv("SECRET_KEY")
+	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte(secretKey), nil
+	})
+
+	if err != nil {
+		return model.User{}, err
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+	issuerId, err := strconv.Atoi(claims.Issuer)
+	if err != nil {
+		return model.User{}, fmt.Errorf("failed to convert issuer ID to integer: %v", err)
+	}
+
+	var user model.User
+	user, err = s.UserRepository.FindById(issuerId)
+	if err != nil {
+		return model.User{}, err
+	}
+
+	return user, nil
+}
+
+func (s *AuthServiceImpl) Logout(ctx *fiber.Ctx) error {
+	cookie := fiber.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HTTPOnly: true,
+	}
+
+	ctx.Cookie(&cookie)
+
+	return nil
 }

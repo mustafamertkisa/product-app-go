@@ -20,7 +20,9 @@ func (controller *OrderController) Create(ctx *fiber.Ctx) error {
 	createOrderRequest := command.CreateOrderRequest{}
 	err := ctx.BodyParser(&createOrderRequest)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	controller.orderService.Create(createOrderRequest)
@@ -39,13 +41,17 @@ func (controller *OrderController) Update(ctx *fiber.Ctx) error {
 	updateOrderRequest := command.UpdateOrderRequest{}
 	err := ctx.BodyParser(&updateOrderRequest)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	updateOrderRequest.Id = id
@@ -66,7 +72,9 @@ func (controller *OrderController) Delete(ctx *fiber.Ctx) error {
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	controller.orderService.Delete(id)
@@ -85,12 +93,16 @@ func (controller *OrderController) FindById(ctx *fiber.Ctx) error {
 	orderId := ctx.Params("orderId")
 	id, err := strconv.Atoi(orderId)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	orderResponse, err := controller.orderService.FindById(id)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	webResponse := command.Response{
@@ -106,7 +118,9 @@ func (controller *OrderController) FindById(ctx *fiber.Ctx) error {
 func (controller *OrderController) FindAll(ctx *fiber.Ctx) error {
 	orderResponse, err := controller.orderService.FindAll()
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	webResponse := command.Response{

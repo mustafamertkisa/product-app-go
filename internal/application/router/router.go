@@ -49,12 +49,11 @@ func NewRouter(productController *api.ProductController, userController *api.Use
 		router.Put("", orderController.Update)
 	})
 
-	router.Route("/register", func(router fiber.Router) {
-		router.Post("/", authController.Register)
-	})
-
-	router.Route("/login", func(router fiber.Router) {
-		router.Post("/", authController.Login)
+	router.Route("/auth", func(router fiber.Router) {
+		router.Post("/register", authController.Register)
+		router.Post("/login", authController.Login)
+		router.Post("/user", authController.User)
+		router.Post("/logout", authController.Logout)
 	})
 
 	return router

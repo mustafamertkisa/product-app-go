@@ -21,8 +21,8 @@ func NewUserServiceImpl(userRepository repository.UserRepository, validate *vali
 	}
 }
 
-func (u *UserServiceImpl) Create(user command.CreateUserRequest) error {
-	err := u.validate.Struct(user)
+func (s *UserServiceImpl) Create(user command.CreateUserRequest) error {
+	err := s.validate.Struct(user)
 	if err != nil {
 		return err
 	}
@@ -32,7 +32,7 @@ func (u *UserServiceImpl) Create(user command.CreateUserRequest) error {
 		Email: user.Email,
 	}
 
-	err = u.UserRepository.Save(userModel)
+	err = s.UserRepository.Save(userModel)
 	if err != nil {
 		return errors.New("failed to save user: " + err.Error())
 	}
@@ -40,8 +40,8 @@ func (u *UserServiceImpl) Create(user command.CreateUserRequest) error {
 	return nil
 }
 
-func (u *UserServiceImpl) Update(user command.UpdateUserRequest) error {
-	userData, err := u.UserRepository.FindById(user.Id)
+func (s *UserServiceImpl) Update(user command.UpdateUserRequest) error {
+	userData, err := s.UserRepository.FindById(user.Id)
 	if err != nil {
 		return errors.New("failed to find user: " + err.Error())
 	}
@@ -49,7 +49,7 @@ func (u *UserServiceImpl) Update(user command.UpdateUserRequest) error {
 	userData.Name = user.Name
 	userData.Email = user.Email
 
-	err = u.UserRepository.Update(userData)
+	err = s.UserRepository.Update(userData)
 	if err != nil {
 		return errors.New("failed to update user: " + err.Error())
 	}
@@ -57,8 +57,8 @@ func (u *UserServiceImpl) Update(user command.UpdateUserRequest) error {
 	return nil
 }
 
-func (u *UserServiceImpl) Delete(userId int) error {
-	err := u.UserRepository.Delete(userId)
+func (s *UserServiceImpl) Delete(userId int) error {
+	err := s.UserRepository.Delete(userId)
 	if err != nil {
 		return errors.New("failed to delete order: " + err.Error())
 	}
@@ -66,8 +66,8 @@ func (u *UserServiceImpl) Delete(userId int) error {
 	return nil
 }
 
-func (u *UserServiceImpl) FindById(userId int) (command.UserResponse, error) {
-	userData, err := u.UserRepository.FindById(userId)
+func (s *UserServiceImpl) FindById(userId int) (command.UserResponse, error) {
+	userData, err := s.UserRepository.FindById(userId)
 	if err != nil {
 		return command.UserResponse{}, errors.New("failed to find user: " + err.Error())
 	}
@@ -81,8 +81,8 @@ func (u *UserServiceImpl) FindById(userId int) (command.UserResponse, error) {
 	return userResponse, nil
 }
 
-func (u *UserServiceImpl) FindAll() ([]command.UserResponse, error) {
-	result, err := u.UserRepository.FindAll()
+func (s *UserServiceImpl) FindAll() ([]command.UserResponse, error) {
+	result, err := s.UserRepository.FindAll()
 	if err != nil {
 		return nil, errors.New("failed to find users: " + err.Error())
 	}

@@ -20,7 +20,9 @@ func (controller *UserController) Create(ctx *fiber.Ctx) error {
 	createUserRequest := command.CreateUserRequest{}
 	err := ctx.BodyParser(&createUserRequest)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	controller.userService.Create(createUserRequest)
@@ -39,13 +41,17 @@ func (controller *UserController) Update(ctx *fiber.Ctx) error {
 	updateUserRequest := command.UpdateUserRequest{}
 	err := ctx.BodyParser(&updateUserRequest)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	updateUserRequest.Id = id
@@ -66,7 +72,9 @@ func (controller *UserController) Delete(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	controller.userService.Delete(id)
@@ -85,12 +93,16 @@ func (controller *UserController) FindById(ctx *fiber.Ctx) error {
 	userId := ctx.Params("userId")
 	id, err := strconv.Atoi(userId)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	userResponse, err := controller.userService.FindById(id)
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	webResponse := command.Response{
@@ -106,7 +118,9 @@ func (controller *UserController) FindById(ctx *fiber.Ctx) error {
 func (controller *UserController) FindAll(ctx *fiber.Ctx) error {
 	userResponse, err := controller.userService.FindAll()
 	if err != nil {
-		return err
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
 	}
 
 	webResponse := command.Response{
