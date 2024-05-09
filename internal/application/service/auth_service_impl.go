@@ -13,6 +13,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-playground/validator"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -53,12 +54,38 @@ func (s *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (
 		return "", err
 	}
 
+	var status int // 1 for success, 0 for failure
+	var message string
+
 	if userData.Id == 0 {
-		return "", errors.New("user not found")
+		status = 0
+		message = "user not found"
+	} else {
+		if err := bcrypt.CompareHashAndPassword(userData.Password, []byte(user.Password)); err != nil {
+			status = 0
+			message = "incorrect password"
+		} else {
+			status = 1
+			message = "successful login attempt for user"
+		}
 	}
 
-	if err := bcrypt.CompareHashAndPassword(userData.Password, []byte(user.Password)); err != nil {
-		return "", errors.New("incorrect password")
+	logEntry := model.LoginLog{
+		Id:        primitive.NewObjectID(),
+		Status:    status,
+		Message:   message,
+		UserId:    userData.Id,
+		CreatedAt: time.Now(),
+	}
+
+	err = s.UserRepository.AddLogToMongo(logEntry)
+	if err != nil {
+		fmt.Println("Error logging login attempt:", err)
+		return "", err
+	}
+
+	if status == 0 {
+		return "", errors.New(message)
 	}
 
 	secretKey := os.Getenv("SECRET_KEY")
@@ -68,6 +95,7 @@ func (s *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (
 		Issuer:    strconv.Itoa(int(userData.Id)),
 		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
 	})
+
 	token, err := claims.SignedString(secret)
 	if err != nil {
 		return "", errors.New("could not create JWT token")

@@ -24,22 +24,25 @@ func main() {
 		log.Fatalf("Error loading env file")
 	}
 
-	dbUrl := os.Getenv("POSTGRES_URL")
+	postgresUrl := os.Getenv("POSTGRES_URL")
+	mongoUrl := os.Getenv("MONGO_URL")
 
-	db := infrastructure.ConnectionDB(dbUrl)
+	postgres := infrastructure.ConnectionPostgres(postgresUrl)
+	mongo := infrastructure.ConnectMongo(mongoUrl)
+
 	validate := validator.New()
 
-	db.AutoMigrate(&model.Product{}, &model.User{}, &model.Order{})
+	postgres.AutoMigrate(&model.Product{}, &model.User{}, &model.Order{})
 
-	productRepository := repository.NewProductRepositoryImpl(db)
+	productRepository := repository.NewProductRepositoryImpl(postgres)
 	productService := service.NewProductServiceImpl(productRepository, validate)
 	productController := api.NewProductController(productService)
 
-	userRepository := repository.NewUserRepositoryImpl(db)
+	userRepository := repository.NewUserRepositoryImpl(postgres, mongo)
 	userService := service.NewUserServiceImpl(userRepository, validate)
 	userController := api.NewUserController(userService)
 
-	orderRepository := repository.NewOrderRepositoryImpl(db)
+	orderRepository := repository.NewOrderRepositoryImpl(postgres)
 	orderService := service.NewOrderServiceImpl(orderRepository, validate)
 	orderController := api.NewOrderController(orderService)
 

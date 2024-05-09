@@ -1,23 +1,26 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
 
+	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 )
 
 type UserRepositoryImpl struct {
-	Db *gorm.DB
+	PostgresDb *gorm.DB
+	MongoDb    *mongo.Client
 }
 
-func NewUserRepositoryImpl(Db *gorm.DB) UserRepository {
-	return &UserRepositoryImpl{Db: Db}
+func NewUserRepositoryImpl(PostgresDb *gorm.DB, MongoDb *mongo.Client) UserRepository {
+	return &UserRepositoryImpl{PostgresDb: PostgresDb, MongoDb: MongoDb}
 }
 
-func (u *UserRepositoryImpl) Save(user model.User) error {
-	result := u.Db.Create(&user)
+func (r *UserRepositoryImpl) Save(user model.User) error {
+	result := r.PostgresDb.Create(&user)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -25,9 +28,9 @@ func (u *UserRepositoryImpl) Save(user model.User) error {
 	return nil
 }
 
-func (u *UserRepositoryImpl) Update(user model.User) error {
+func (r *UserRepositoryImpl) Update(user model.User) error {
 	var updateUser = command.UpdateUserRequest{Id: int(user.Id), Name: user.Name, Email: user.Email}
-	result := u.Db.Model(&model.User{}).Where("id = ?", user.Id).Updates(updateUser)
+	result := r.PostgresDb.Model(&model.User{}).Where("id = ?", user.Id).Updates(updateUser)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -35,9 +38,9 @@ func (u *UserRepositoryImpl) Update(user model.User) error {
 	return nil
 }
 
-func (u *UserRepositoryImpl) Delete(userId int) error {
+func (r *UserRepositoryImpl) Delete(userId int) error {
 	var user model.User
-	result := u.Db.Where("id = ?", userId).Delete(&user)
+	result := r.PostgresDb.Where("id = ?", userId).Delete(&user)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -45,9 +48,9 @@ func (u *UserRepositoryImpl) Delete(userId int) error {
 	return nil
 }
 
-func (u *UserRepositoryImpl) FindAll() ([]model.User, error) {
+func (r *UserRepositoryImpl) FindAll() ([]model.User, error) {
 	var user []model.User
-	result := u.Db.Find(&user)
+	result := r.PostgresDb.Find(&user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -55,9 +58,9 @@ func (u *UserRepositoryImpl) FindAll() ([]model.User, error) {
 	return user, nil
 }
 
-func (u *UserRepositoryImpl) FindById(userId int) (model.User, error) {
+func (r *UserRepositoryImpl) FindById(userId int) (model.User, error) {
 	var user model.User
-	result := u.Db.Find(&user, userId)
+	result := r.PostgresDb.Find(&user, userId)
 	if result == nil {
 		return user, errors.New("user is not found")
 	}
@@ -65,12 +68,23 @@ func (u *UserRepositoryImpl) FindById(userId int) (model.User, error) {
 	return user, nil
 }
 
-func (u *UserRepositoryImpl) FindByEmail(userEmail string) (model.User, error) {
+func (r *UserRepositoryImpl) FindByEmail(userEmail string) (model.User, error) {
 	var user model.User
-	result := u.Db.Where("email = ?", userEmail).First(&user)
+	result := r.PostgresDb.Where("email = ?", userEmail).First(&user)
 	if result.Error != nil {
 		return user, result.Error
 	}
 
 	return user, nil
+}
+
+func (r *UserRepositoryImpl) AddLogToMongo(log model.LoginLog) error {
+	collection := r.MongoDb.Database("logs").Collection("login_logs")
+
+	_, err := collection.InsertOne(context.TODO(), log)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

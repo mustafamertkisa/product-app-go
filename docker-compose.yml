@@ -10,6 +10,14 @@ services:
     networks:
       - my_network
 
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - 27017:27017
+    networks:
+      - my_network
+
   go_api:
     build: 
       context: .
@@ -19,6 +27,7 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
+      - mongo
     networks:
       - my_network
 
