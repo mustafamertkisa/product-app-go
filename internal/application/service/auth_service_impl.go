@@ -54,25 +54,25 @@ func (s *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (
 		return "", err
 	}
 
-	var status int // 1 for success, 0 for failure
+	var success bool
 	var message string
 
 	if userData.Id == 0 {
-		status = 0
+		success = false
 		message = "user not found"
 	} else {
 		if err := bcrypt.CompareHashAndPassword(userData.Password, []byte(user.Password)); err != nil {
-			status = 0
+			success = false
 			message = "incorrect password"
 		} else {
-			status = 1
+			success = true
 			message = "successful login attempt for user"
 		}
 	}
 
 	logEntry := model.LoginLog{
 		Id:        primitive.NewObjectID(),
-		Status:    status,
+		Success:   success,
 		Message:   message,
 		UserId:    userData.Id,
 		CreatedAt: time.Now(),
@@ -84,7 +84,7 @@ func (s *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (
 		return "", err
 	}
 
-	if status == 0 {
+	if !success {
 		return "", errors.New(message)
 	}
 

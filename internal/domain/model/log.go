@@ -8,7 +8,7 @@ import (
 
 type LoginLog struct {
 	Id        primitive.ObjectID `bson:"_id" json:"id"`
-	Status    int                `bson:"status" json:"status"`
+	Success   bool               `bson:"success" json:"success"`
 	Message   string             `bson:"message" json:"message"`
 	UserId    int                `bson:"userId" json:"userId"`
 	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
