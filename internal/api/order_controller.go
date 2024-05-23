@@ -25,7 +25,12 @@ func (controller *OrderController) Create(ctx *fiber.Ctx) error {
 		})
 	}
 
-	controller.orderService.Create(createOrderRequest)
+	err = controller.orderService.Create(createOrderRequest)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -56,7 +61,12 @@ func (controller *OrderController) Update(ctx *fiber.Ctx) error {
 
 	updateOrderRequest.Id = id
 
-	controller.orderService.Update(updateOrderRequest)
+	err = controller.orderService.Update(updateOrderRequest)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -77,7 +87,12 @@ func (controller *OrderController) Delete(ctx *fiber.Ctx) error {
 		})
 	}
 
-	controller.orderService.Delete(id)
+	err = controller.orderService.Delete(id)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,

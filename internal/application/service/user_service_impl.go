@@ -27,6 +27,11 @@ func (s *UserServiceImpl) Create(user command.CreateUserRequest) error {
 		return err
 	}
 
+	existingUser, _ := s.UserRepository.FindByEmail(user.Email)
+	if existingUser.Email != "" {
+		return errors.New("user already exists")
+	}
+
 	userModel := model.User{
 		Name:  user.Name,
 		Email: user.Email,
@@ -41,6 +46,12 @@ func (s *UserServiceImpl) Create(user command.CreateUserRequest) error {
 }
 
 func (s *UserServiceImpl) Update(user command.UpdateUserRequest) error {
+	existingUser, _ := s.UserRepository.FindByEmail(user.Email)
+
+	if existingUser.Email != "" {
+		return errors.New("this email is already in use")
+	}
+
 	userData, err := s.UserRepository.FindById(user.Id)
 	if err != nil {
 		return errors.New("failed to find user: " + err.Error())

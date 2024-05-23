@@ -2,12 +2,15 @@ package router
 
 import (
 	"product-app-go/internal/api"
+	"product-app-go/internal/middleware"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-func NewRouter(productController *api.ProductController, userController *api.UserController, orderController *api.OrderController, authController *api.AuthController) *fiber.App {
+func NewRouter(productController *api.ProductController, userController *api.UserController, orderController *api.OrderController, authController *api.AuthController, logController *api.LogController) *fiber.App {
 	router := fiber.New()
+
+	authRequired := middleware.NewAuthMiddleware()
 
 	router.Get("/healthchecker", func(c *fiber.Ctx) error {
 		return c.Status(200).JSON(fiber.Map{
@@ -16,45 +19,67 @@ func NewRouter(productController *api.ProductController, userController *api.Use
 		})
 	})
 
-	router.Route("/products", func(router fiber.Router) {
-		router.Post("/", productController.Create)
-		router.Get("", productController.FindAll)
-	})
+	// Product routes
+	productRoutes := router.Group("/products")
+	{
+		productRoutes.Post("/", productController.Create)
+		productRoutes.Get("/", productController.FindAll)
 
-	router.Route("/products/:productId", func(router fiber.Router) {
-		router.Delete("", productController.Delete)
-		router.Get("", productController.FindById)
-		router.Put("", productController.Update)
-	})
+		productRoutes.Route("/:productId", func(productRouter fiber.Router) {
+			productRouter.Delete("", productController.Delete)
+			productRouter.Get("", productController.FindById)
+			productRouter.Put("", productController.Update)
+		})
+	}
 
-	router.Route("/users", func(router fiber.Router) {
-		router.Post("/", userController.Create)
-		router.Get("", userController.FindAll)
-	})
+	// User routes
+	userRoutes := router.Group("/users")
+	{
+		userRoutes.Post("/", userController.Create)
+		userRoutes.Get("/", userController.FindAll)
 
-	router.Route("/users/:userId", func(router fiber.Router) {
-		router.Delete("", userController.Delete)
-		router.Get("", userController.FindById)
-		router.Put("", userController.Update)
-	})
+		userRoutes.Route("/:userId", func(userRouter fiber.Router) {
+			userRouter.Delete("", authRequired, userController.Delete)
+			userRouter.Get("", userController.FindById)
+			userRouter.Put("", authRequired, userController.Update)
+		})
+	}
 
-	router.Route("/orders", func(router fiber.Router) {
-		router.Post("/", orderController.Create)
-		router.Get("", orderController.FindAll)
-	})
+	// Order routes
+	orderRoutes := router.Group("/orders")
+	{
+		orderRoutes.Post("/", orderController.Create)
+		orderRoutes.Get("/", orderController.FindAll)
 
-	router.Route("/orders/:orderId", func(router fiber.Router) {
-		router.Delete("", orderController.Delete)
-		router.Get("", orderController.FindById)
-		router.Put("", orderController.Update)
-	})
+		orderRoutes.Route("/:orderId", func(orderRouter fiber.Router) {
+			orderRouter.Delete("", orderController.Delete)
+			orderRouter.Get("", orderController.FindById)
+			orderRouter.Put("", orderController.Update)
+		})
+	}
 
-	router.Route("/auth", func(router fiber.Router) {
-		router.Post("/register", authController.Register)
-		router.Post("/login", authController.Login)
-		router.Post("/user", authController.User)
-		router.Post("/logout", authController.Logout)
-	})
+	// Auth routes
+	authRoutes := router.Group("/auth")
+	{
+		authRoutes.Post("/register", authController.Register)
+		authRoutes.Post("/login", authController.Login)
+		authRoutes.Post("/user", authController.User)
+		authRoutes.Post("/logout", authController.Logout)
+	}
+
+	// Log routes
+	logRoutes := router.Group("/logs")
+	{
+		logRoutes.Delete("/", logController.DeleteAllLogs)
+		logRoutes.Get("/", logController.GetAllLogs)
+
+		logRoutes.Route("/:id", func(logRouter fiber.Router) {
+			logRouter.Get("", logController.GetLogById)
+			logRouter.Delete("", logController.DeleteLogById)
+		})
+
+		logRoutes.Get("/user/:userId", logController.GetLogsByUserId)
+	}
 
 	return router
 }

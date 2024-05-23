@@ -3,6 +3,7 @@ package api
 import (
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/application/service"
+	"product-app-go/internal/middleware"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -25,7 +26,12 @@ func (controller *UserController) Create(ctx *fiber.Ctx) error {
 		})
 	}
 
-	controller.userService.Create(createUserRequest)
+	err = controller.userService.Create(createUserRequest)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -38,6 +44,11 @@ func (controller *UserController) Create(ctx *fiber.Ctx) error {
 }
 
 func (controller *UserController) Update(ctx *fiber.Ctx) error {
+	checkJWT := middleware.ValidateJWTClaims(ctx)
+	if !checkJWT {
+		return ctx.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
 	updateUserRequest := command.UpdateUserRequest{}
 	err := ctx.BodyParser(&updateUserRequest)
 	if err != nil {
@@ -46,8 +57,7 @@ func (controller *UserController) Update(ctx *fiber.Ctx) error {
 		})
 	}
 
-	userId := ctx.Params("userId")
-	id, err := strconv.Atoi(userId)
+	id, err := strconv.Atoi(ctx.Params("userId"))
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -56,7 +66,12 @@ func (controller *UserController) Update(ctx *fiber.Ctx) error {
 
 	updateUserRequest.Id = id
 
-	controller.userService.Update(updateUserRequest)
+	err = controller.userService.Update(updateUserRequest)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -69,15 +84,24 @@ func (controller *UserController) Update(ctx *fiber.Ctx) error {
 }
 
 func (controller *UserController) Delete(ctx *fiber.Ctx) error {
-	userId := ctx.Params("userId")
-	id, err := strconv.Atoi(userId)
+	checkJWT := middleware.ValidateJWTClaims(ctx)
+	if !checkJWT {
+		return ctx.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "unauthorized"})
+	}
+
+	id, err := strconv.Atoi(ctx.Params("userId"))
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 
-	controller.userService.Delete(id)
+	err = controller.userService.Delete(id)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,

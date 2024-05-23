@@ -46,10 +46,14 @@ func main() {
 	orderService := service.NewOrderServiceImpl(orderRepository, validate)
 	orderController := api.NewOrderController(orderService)
 
-	authService := service.NewAuthServiceImpl(userRepository, validate)
+	logRepository := repository.NewLogRepositoryImpl(mongo)
+	logService := service.NewLogServiceImpl(logRepository)
+	logController := api.NewLogController(logService)
+
+	authService := service.NewAuthServiceImpl(userRepository, logRepository, validate)
 	authController := api.NewAuthController(authService)
 
-	routes := router.NewRouter(productController, userController, orderController, authController)
+	routes := router.NewRouter(productController, userController, orderController, authController, logController)
 
 	app := fiber.New()
 	app.Mount("/api", routes)

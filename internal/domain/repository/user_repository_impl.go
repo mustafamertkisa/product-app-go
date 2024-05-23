@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"errors"
 	"product-app-go/internal/application/command"
 	"product-app-go/internal/domain/model"
@@ -76,15 +75,4 @@ func (r *UserRepositoryImpl) FindByEmail(userEmail string) (model.User, error) {
 	}
 
 	return user, nil
-}
-
-func (r *UserRepositoryImpl) AddLogToMongo(log model.LoginLog) error {
-	collection := r.MongoDb.Database("logs").Collection("login_logs")
-
-	_, err := collection.InsertOne(context.TODO(), log)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

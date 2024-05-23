@@ -19,12 +19,14 @@ import (
 
 type AuthServiceImpl struct {
 	UserRepository repository.UserRepository
+	LogRepository  repository.LogRepository
 	validate       *validator.Validate
 }
 
-func NewAuthServiceImpl(userRepository repository.UserRepository, validate *validator.Validate) AuthService {
+func NewAuthServiceImpl(userRepository repository.UserRepository, logRepository repository.LogRepository, validate *validator.Validate) AuthService {
 	return &AuthServiceImpl{
 		UserRepository: userRepository,
+		LogRepository:  logRepository,
 		validate:       validate,
 	}
 }
@@ -33,6 +35,11 @@ func (s *AuthServiceImpl) Register(user command.CreateUserRequest) error {
 	err := s.validate.Struct(user)
 	if err != nil {
 		return errors.New("validation failed: " + err.Error())
+	}
+
+	existingUser, _ := s.UserRepository.FindByEmail(user.Email)
+	if existingUser.Email != "" {
+		return errors.New("user already exists")
 	}
 
 	password, _ := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
@@ -78,10 +85,9 @@ func (s *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (
 		CreatedAt: time.Now(),
 	}
 
-	err = s.UserRepository.AddLogToMongo(logEntry)
+	err = s.LogRepository.AddLogToMongo(logEntry)
 	if err != nil {
 		fmt.Println("Error logging login attempt:", err)
-		return "", err
 	}
 
 	if !success {
@@ -91,31 +97,34 @@ func (s *AuthServiceImpl) Login(user command.UserLoginRequest, ctx *fiber.Ctx) (
 	secretKey := os.Getenv("SECRET_KEY")
 	secret := []byte(secretKey)
 
-	claims := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
-		Issuer:    strconv.Itoa(int(userData.Id)),
-		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
-	})
+	expectedExpTime := time.Now().Add(time.Hour * 2) // two hour
 
-	token, err := claims.SignedString(secret)
+	claims := jwt.MapClaims{
+		"user_id": strconv.Itoa(int(userData.Id)),
+		"exp":     expectedExpTime.Unix(),
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString(secret)
 	if err != nil {
-		return "", errors.New("could not create JWT token")
+		return "", ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
 	}
 
 	cookie := fiber.Cookie{
 		Name:     "jwt",
-		Value:    token,
-		Expires:  time.Now().Add(time.Hour * 24),
+		Value:    tokenString,
+		Expires:  expectedExpTime,
 		HTTPOnly: true,
 	}
 
 	ctx.Cookie(&cookie)
 
-	return token, nil
+	return tokenString, nil
 }
 
 func (s *AuthServiceImpl) GetUserFromToken(cookie string) (model.User, error) {
 	secretKey := os.Getenv("SECRET_KEY")
-	token, err := jwt.ParseWithClaims(cookie, &jwt.StandardClaims{}, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(cookie, &jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return []byte(secretKey), nil
 	})
 
@@ -123,14 +132,23 @@ func (s *AuthServiceImpl) GetUserFromToken(cookie string) (model.User, error) {
 		return model.User{}, err
 	}
 
-	claims := token.Claims.(*jwt.StandardClaims)
-	issuerId, err := strconv.Atoi(claims.Issuer)
+	claims, ok := token.Claims.(*jwt.MapClaims)
+	if !ok || !token.Valid {
+		return model.User{}, errors.New("invalid token")
+	}
+
+	userIdStr, ok := (*claims)["user_id"].(string)
+	if !ok || userIdStr == "" {
+		return model.User{}, errors.New("user ID is empty")
+	}
+
+	userId, err := strconv.Atoi(userIdStr)
 	if err != nil {
-		return model.User{}, fmt.Errorf("failed to convert issuer ID to integer: %v", err)
+		return model.User{}, fmt.Errorf("failed to convert user ID to integer: %v", err)
 	}
 
 	var user model.User
-	user, err = s.UserRepository.FindById(issuerId)
+	user, err = s.UserRepository.FindById(userId)
 	if err != nil {
 		return model.User{}, err
 	}

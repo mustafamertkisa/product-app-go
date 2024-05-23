@@ -25,7 +25,12 @@ func (controller *ProductController) Create(ctx *fiber.Ctx) error {
 		})
 	}
 
-	controller.productService.Create(createProductRequest)
+	err = controller.productService.Create(createProductRequest)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -56,7 +61,12 @@ func (controller *ProductController) Update(ctx *fiber.Ctx) error {
 
 	updateProductRequest.Id = id
 
-	controller.productService.Update(updateProductRequest)
+	err = controller.productService.Update(updateProductRequest)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,
@@ -77,7 +87,12 @@ func (controller *ProductController) Delete(ctx *fiber.Ctx) error {
 		})
 	}
 
-	controller.productService.Delete(id)
+	err = controller.productService.Delete(id)
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
 
 	webResponse := command.Response{
 		Code:    200,

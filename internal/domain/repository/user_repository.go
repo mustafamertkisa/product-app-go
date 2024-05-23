@@ -9,5 +9,4 @@ type UserRepository interface {
 	FindById(userId int) (model.User, error)
 	FindByEmail(userEmail string) (model.User, error)
 	FindAll() ([]model.User, error)
-	AddLogToMongo(log model.LoginLog) error
 }
