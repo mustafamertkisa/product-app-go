@@ -86,6 +86,10 @@ func (s *ProductServiceImpl) FindAll() ([]command.ProductResponse, error) {
 		return nil, errors.New("failed to find products: " + err.Error())
 	}
 
+	if len(result) == 0 {
+		return nil, errors.New("no data found")
+	}
+
 	var products []command.ProductResponse
 
 	for _, value := range result {

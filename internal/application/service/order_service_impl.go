@@ -123,6 +123,10 @@ func (s *OrderServiceImpl) FindAll() ([]command.OrderResponse, error) {
 		return nil, errors.New("failed to find orders: " + err.Error())
 	}
 
+	if len(result) == 0 {
+		return nil, errors.New("no data found")
+	}
+
 	var orders []command.OrderResponse
 
 	for _, value := range result {

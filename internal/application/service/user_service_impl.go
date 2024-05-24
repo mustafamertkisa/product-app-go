@@ -98,6 +98,10 @@ func (s *UserServiceImpl) FindAll() ([]command.UserResponse, error) {
 		return nil, errors.New("failed to find users: " + err.Error())
 	}
 
+	if len(result) == 0 {
+		return nil, errors.New("no data found")
+	}
+
 	var users []command.UserResponse
 
 	for _, value := range result {
